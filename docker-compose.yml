@@ -1,0 +1,83 @@
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hrms-frontend
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_API_URL: http://nginx/api
+      NEXTAUTH_URL: http://localhost
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your-secret-key-change-in-production}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - hrms-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hrms-backend
+    ports:
+      - '8000:8000'
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-hrms_user}:${DB_PASSWORD:-hrms_password}@postgres:5432/${DB_NAME:-hrms_db}
+      SECRET_KEY: ${JWT_SECRET:-your-jwt-secret-change-in-production}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - hrms-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: hrms-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-hrms_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-hrms_password}
+      POSTGRES_DB: ${DB_NAME:-hrms_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - hrms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hrms_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: hrms-nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - hrms-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  hrms-network:
+    driver: bridge

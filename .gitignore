@@ -1,0 +1,64 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Backend
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+backend/venv/
+backend/.venv/
+backend/env/
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.next/static/
+frontend/out/
+frontend/.npm
+frontend/dist/
+frontend/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.log
+
+# Docker
+.dockerignore
+postgres_data/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary Files
+*.tmp
+*.temp
+**/temp/
+**/tmp/
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+.tox/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Credentials
+.aws/
+*.pem
+*.key
